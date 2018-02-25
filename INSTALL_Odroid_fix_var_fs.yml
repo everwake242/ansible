@@ -1,0 +1,63 @@
+# vim: ts=2 sw=2 ai paste
+
+---
+- hosts: all
+  become: true
+  vars:
+    phy_disk: '/dev/sda'
+    phy_part: 2
+    lvm_volgrp: 'varvg'
+    lvm_lvol_varlog: 'varloglv'
+    lvm_lvol_varlibdocker: 'varlibdockerlv'    
+    mount_point: '/data/glusterfs/bricks/brick1/'
+
+
+  tasks:
+
+  - name: partition the disk for lvm
+    parted:
+      device: '{{ phy_disk }}'
+      number: '{{ phy_part }}'
+      flags: [ lvm ]
+      state: present
+    register: phy_diskname
+    tags: disk
+
+  - name: setup volume group
+    lvg:
+      vg: '{{ lvm_volgrp }}'
+      pvs: '{{ phy_disk }}{{ phy_part}}'
+      state: present
+    register: setup_lvg
+    tags: disk
+
+  - name: setup logical volume for /var/log
+    lvol:
+      lv: '{{ lvm_lvol_varlog }}'
+      vg: '{{ lvm_volgrp }}'
+      size: 5G
+    register: setup_lvol
+ #   when: setup_lvg.changed == true
+    tags: disk
+
+  - name: setup logical volume for /var/lib/docker
+    lvol:
+      lv: '{{ lvm_lvol_varlibdocker }}'
+      vg: '{{ lvm_volgrp }}'
+      size: 20G
+    register: setup_lvol
+ #   when: setup_lvg.changed == true
+    tags: disk
+
+
+
+  - name: create ext4 filesystems
+    filesystem:
+      fstype: ext4
+      dev: '/dev/{{ lvm_volgrp }}/{{ item }}'
+    #when: setup_lvol.changed == true
+    with_item:
+      - '{{ lvm_lvol_varlog }}'
+      - '{{ lvm_lvol_varlibdocker }}'
+    tags: disk
+
