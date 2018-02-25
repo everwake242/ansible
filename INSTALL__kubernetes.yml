@@ -22,6 +22,12 @@
       - docker.io
     tags: kubernetes 
 
+  - name: ensure docker engine is started
+    systemd:
+      name: docker.io
+      state: started
+      enabled: True
+
   - name: add google apt key
     apt_key:
       url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
