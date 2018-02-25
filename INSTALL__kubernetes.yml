@@ -71,12 +71,23 @@
     shell:  /usr/bin/kubeadm token list |tail -1| awk '{ print $1 }'
     when:  inventory_hostname == k8s_master_node 
     register: k8s_cluster_token    
+    delegate_to: '{{ k8s_master_node }}'
     tags: kubernetes
+  
+#  - set_fact:
+#      k8s_cluster_token: '{{ k8s_cluster_token.stdout }}'
 
   - name: show kubeadm output for debug
     debug:
-      var: k8s_cluster_token
+      var: k8s_cluster_token.stdout
+
+  - stat:
+      path: /etc/kubernetes/kubelet.conf
+    register: kubeletconf_file
+
 
   - name: ':: cluster :: Joining node to Kubernetes cluster'
-    shell: 'kubeadm join --token {{ k8s_cluster_token }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification'      
-    when:  inventory_hostname != k8s_master_node 
+#    shell: 'kubeadm join --token {{ hostvars.k8s1.k8s_cluster_token.stdout }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification'      
+#    shell: 'kubeadm join --token {{ ['hostvars ']['k8s_master_node']['k8s_cluster_token']['stdout'] }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification'      
+    shell: 'kubeadm join --token {{ hostvars[k8s_master_node][k8s_cluster_token][stdout] }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification'      
+    when:  inventory_hostname != k8s_master_node and kubeletconf_file.stat.exists != true 
