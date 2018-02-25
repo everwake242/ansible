@@ -47,10 +47,14 @@
       update_cache: yes      
     tags: kubernetes
 
+  - stat:
+      path: /var/lib/etcd
+    register: etcd_folder    
+
   - name: Initialize kubernetes
     command: kubeadm init --pod-network-cidr '{{ pod_network_cidr }}'
-    when:  inventory_hostname == k8s_master_node 
-    register: kubeadm_output    
+    when:  inventory_hostname == k8s_master_node and etcd_folder.stat.exists != true 
+    register: kubeadm_output   
     tags: kubernetes
 
   ### to make kubectl work, this needs to be done, and kubectl needs to run as non-root
@@ -72,6 +76,7 @@
   - name: show kubeadm output
     debug:
       var: k8s_cluster_token
+
   - name: ':: cluster :: Joining node to Kubernetes cluster'
-    command: 'kubeadm join --token {{ k8s_cluster_token }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification'      
+    shell: 'kubeadm join --token {{ k8s_cluster_token }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification'      
     when:  inventory_hostname != k8s_master_node 
