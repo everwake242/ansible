@@ -5,8 +5,8 @@
   become: true
   vars:
     phy_disk: '/dev/sda'
-    phy_part: 2
-    lvm_volgrp: 'varvg'
+    phy_part: 1
+    lvm_volgrp: 'glusterVol'
     lvm_lvol_varlog: 'varloglv'
     lvm_lvol_varlibdocker: 'varlibdockerlv'    
     mount_point: '/data/glusterfs/bricks/brick1/'
@@ -14,22 +14,22 @@
 
   tasks:
 
-  - name: partition the disk for lvm
-    parted:
-      device: '{{ phy_disk }}'
-      number: '{{ phy_part }}'
-      flags: [ lvm ]
-      state: present
-    register: phy_diskname
-    tags: disk
+  #- name: partition the disk for lvm
+    #parted:
+      #device: '{{ phy_disk }}'
+      #number: '{{ phy_part }}'
+      #flags: [ lvm ]
+      #state: present
+    #register: phy_diskname
+    #tags: disk
 
-  - name: setup volume group
-    lvg:
-      vg: '{{ lvm_volgrp }}'
-      pvs: '{{ phy_disk }}{{ phy_part}}'
-      state: present
-    register: setup_lvg
-    tags: disk
+#  - name: setup volume group
+#    lvg:
+#      vg: '{{ lvm_volgrp }}'
+#      pvs: '{{ phy_disk }}{{ phy_part}}'
+#      state: present
+#    register: setup_lvg
+#    tags: disk
 
   - name: setup logical volume for /var/log
     lvol:
@@ -56,7 +56,7 @@
       fstype: ext4
       dev: '/dev/{{ lvm_volgrp }}/{{ item }}'
     #when: setup_lvol.changed == true
-    with_item:
+    with_items:
       - '{{ lvm_lvol_varlog }}'
       - '{{ lvm_lvol_varlibdocker }}'
     tags: disk

@@ -8,17 +8,18 @@
       - k8s1
       - k8s2
       - k8s3
-    pod_network_cidr: '10.243.0/16'
+    pod_network_cidr: '10.243.0.0/16'
 
   tasks:
 
   - name: Install prereq packages
     apt:
-      name: {{ item }}
+      name: '{{ item }}'
       state: latest
-      update_cache: yes
-      with_items:
-        -  apt-transport-https     
+      update_cache: no
+    with_items:
+      - apt-transport-https     
+      - docker.io
     tags: kubernetes 
 
   - name: add google apt key
@@ -35,7 +36,7 @@
 
   - name: Install kubeadm and prereq packages
     apt:
-      name: kudeadm
+      name: kubeadm
       state: latest
       update_cache: yes      
     tags: kubernetes
