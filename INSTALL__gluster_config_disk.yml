@@ -65,7 +65,7 @@
 
 #### Install gluster packages
   - name: add apt repo for gluster
-    atp_repository:
+    apt_repository:
       repo: ppa:gluster/glusterfs-3.13
       state: present
 
