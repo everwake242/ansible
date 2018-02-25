@@ -24,7 +24,7 @@
 
   - name: ensure docker engine is started
     systemd:
-      name: docker.io
+      name: docker
       state: started
       enabled: True
 
