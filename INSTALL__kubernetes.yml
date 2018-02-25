@@ -4,8 +4,8 @@
 - hosts: all
   become: true
   vars:
-    cluster_master: 'k8s1'
-    cluster_members:
+    k8s_master_node: 'k8s1'
+    k8s_slaves:
       - k8s2
       - k8s3
     pod_network_cidr: '10.243.0.0/16'
@@ -49,11 +49,29 @@
 
   - name: Initialize kubernetes
     command: kubeadm init --pod-network-cidr '{{ pod_network_cidr }}'
-    when:  inventory_hostname == cluster_master 
+    when:  inventory_hostname == k8s_master_node 
     register: kubeadm_output    
+    tags: kubernetes
+
+  ### to make kubectl work, this needs to be done, and kubectl needs to run as non-root
+# sudo cp /etc/kubernetes/admin.conf $HOME/
+# sudo chown $(id -u):$(id -g) $HOME/admin.conf
+# export KUBECONFIG=$HOME/admin.conf
+    
+
+  # - name: show kubeadm output
+  #   debug:
+  #     var: kubeadm_output.stdout
+  
+  - name: get cluster token
+    command:  kubeadm token list |tail -1| awk '{ print $1 }'
+    when:  inventory_hostname == k8s_master_node 
+    register: k8s_cluster_token    
     tags: kubernetes
 
   - name: show kubeadm output
     debug:
-      var: kubeadm_output.stdout
-
+      var: k8s_cluster_token
+  - name: ':: cluster :: Joining node to Kubernetes cluster'
+    command: 'kubeadm join --token {{ k8s_cluster_token }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification'      
+    when:  inventory_hostname != k8s_master_node 
