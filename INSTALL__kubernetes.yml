@@ -73,7 +73,7 @@
     register: k8s_cluster_token    
     tags: kubernetes
 
-  - name: show kubeadm output
+  - name: show kubeadm output for debug
     debug:
       var: k8s_cluster_token
 
