@@ -64,7 +64,7 @@
   #     var: kubeadm_output.stdout
   
   - name: get cluster token
-    command:  kubeadm token list |tail -1| awk '{ print $1 }'
+    shell:  /usr/bin/kubeadm token list |tail -1| awk '{ print $1 }'
     when:  inventory_hostname == k8s_master_node 
     register: k8s_cluster_token    
     tags: kubernetes
