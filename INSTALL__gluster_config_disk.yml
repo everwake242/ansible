@@ -9,6 +9,7 @@
     lvm_volgrp: 'glusterVol'
     lvm_lvol: 'brick1'
     mount_point: '/data/glusterfs/bricks/brick1/'
+    client_mount_point: '/data'
     fs_volume_name: 'k8s_vol1'
 
   tasks:
@@ -103,9 +104,15 @@
         - k8s1
         - k8s2
         - k8s3
-    #run_once:true
+    run_once: true
     register: glusterfs_setup
     tags: glusterd
+
+  - name: create clientmountpoint for Gluster volume
+    file:
+      path: '{{ client_mount_point}}/{{ fs_volume_name }}'
+      state: present
+
 
   # -name: tune gluster volume
   #  command: gluster volume set {{ fs_volume_name }} network.ping-timeout 20performance.cache-size 256MB auth.allowglusterfs1.mydomain.local,glusterfs2.mydomain.local
