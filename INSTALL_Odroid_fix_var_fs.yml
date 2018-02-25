@@ -61,22 +61,14 @@
       - '{{ lvm_lvol_varlibdocker }}'
     tags: disk
 
-  - name: create /var/lib/docker
-    file:
-      path: '/var/lib/docker'
-      state: present
-
-  - name: mount /var/lib/docker
-    mount:
-      path: '/var/lib/docker'
-      src: '/dev/{{ lvm_volgrp }}/{{ lvm_lvol_varlibdocker }}'
-      fstype: ext4
-      state: mounted
-    tags: disk 
+#  - name: create /var/lib/docker
+#    file:
+#      path: '/var/lib/docker'
+#      state: directory
 
   - name: mount temporaryt mount for /var/log
     mount:
-      path: '/tmp'
+      path: '/mnt'
       src: '/dev/{{ lvm_volgrp }}/{{ lvm_lvol_varlog }}'
       fstype: ext4
       state: mounted
@@ -86,9 +78,9 @@
   #     dest: /mnt
   #     remote_src: yes
   - synchronize:
-      src: /var/log
-      dest: /mnt
-    delegate_to: {{ inventory_host }}
+      src: /var/log/
+      dest: /mnt/
+    delegate_to: '{{ inventory_hostname }}'
 
   - name: delete everything in /var/log
     file:
@@ -100,7 +92,7 @@
       path: '/tmp'
       src: '/dev/{{ lvm_volgrp }}/{{ lvm_lvol_varlog }}'
       fstype: ext4
-      state: umounted
+      state: unmounted
     tags: disk
 
   - name: mount /var/log on proper disk
@@ -110,3 +102,12 @@
       fstype: ext4
       state: mounted
     tags: disk                
+
+  - name: mount /var/lib/docker
+    mount:
+      path: '/var/lib/docker'
+      src: '/dev/{{ lvm_volgrp }}/{{ lvm_lvol_varlibdocker }}'
+      fstype: ext4
+      state: mounted
+    tags: disk
+
