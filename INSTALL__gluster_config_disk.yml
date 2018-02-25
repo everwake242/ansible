@@ -4,18 +4,18 @@
 - hosts: all
   become: true
   vars:
-    phy_disk: /dev/sda
+    phy_disk: '/dev/sda'
     phy_part: 1
-    lvm_volgrp: glusterVol
-    lvm_lvol: brick1
-    mount_point: /data/glusterfs/bricks/brick1/
-    fs_volume_name: k8s_vol1
+    lvm_volgrp: 'glusterVol'
+    lvm_lvol: 'brick1'
+    mount_point: '/data/glusterfs/bricks/brick1/'
+    fs_volume_name: 'k8s_vol1'
 
   tasks:
 
   - name: partition the disk for lvm
     parted:
-      device: '{{ phy_disk }'
+      device: '{{ phy_disk }}'
       number: 1
       flags: [ lvm ]
       state: present
