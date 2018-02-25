@@ -59,52 +59,52 @@
      state: mounted
    tags: disk
 ##################disk setup completed #####
-  -name: enable glusterd service
-   service:
-     name: glusterd
-     enabled: yes
-     state: started
-   tags: glusterd
-  -name: ensure {{ fs_volume_name }} directory exists within brick
-   file:
-     path: '{{ mount_point }}/{{ fs_volume_name }}'
-     state: directory
-     mode: 0755
-   tags: glusterd
+  # -name: enable glusterd service
+  #  service:
+  #    name: glusterd
+  #    enabled: yes
+  #    state: started
+  #  tags: glusterd
+  # -name: ensure {{ fs_volume_name }} directory exists within brick
+  #  file:
+  #    path: '{{ mount_point }}/{{ fs_volume_name }}'
+  #    state: directory
+  #    mode: 0755
+  #  tags: glusterd
 
-  -name: create gluster volume
-   gluster_volume:
-     name: '{{ fs_volume_name }}'
-     bricks: '{{ mount_point }}{{ fs_volume_name }}'
-     arbiters: 1
-     replicas: 3
-     state: present
-     rebalance: yes
-     cluster:
-       - glusterfs1.mydomain.local
-       - glusterfs2.mydomain.local
-       - glusterfs3.mydomain.local
-   #run_once:true
-   register: glusterfs_setup
-   tags: glusterd
+  # -name: create gluster volume
+  #  gluster_volume:
+  #    name: '{{ fs_volume_name }}'
+  #    bricks: '{{ mount_point }}{{ fs_volume_name }}'
+  #    arbiters: 1
+  #    replicas: 3
+  #    state: present
+  #    rebalance: yes
+  #    cluster:
+  #      - glusterfs1.mydomain.local
+  #      - glusterfs2.mydomain.local
+  #      - glusterfs3.mydomain.local
+  #  #run_once:true
+  #  register: glusterfs_setup
+  #  tags: glusterd
 
-  -name: tune gluster volume
-   command: gluster volume set {{ fs_volume_name }} network.ping-timeout 20performance.cache-size 256MB auth.allowglusterfs1.mydomain.local,glusterfs2.mydomain.local
-   run_once: true
-   tags: gluster_conf
+  # -name: tune gluster volume
+  #  command: gluster volume set {{ fs_volume_name }} network.ping-timeout 20performance.cache-size 256MB auth.allowglusterfs1.mydomain.local,glusterfs2.mydomain.local
+  #  run_once: true
+  #  tags: gluster_conf
    
-  #use cluster.server-quorum-ratio 0 if it's impossible to aquire quorum again.
-  -name: set global gluster cluster.server-quorum-ratio
-   command: gluster volume set all cluster.server-quorum-ratio 51
-   run_once: true
-   tags: gluster_conf
-  #use cluster.server-quorum-type none if it's impossible to aquire quorum again.
-  -name: set volume specific server quorum settings
-   command: gluster volume set {{ fs_volume_name }} cluster.server-quorum-typeserver
-   run_once: true
-   tags: gluster_conf
-  #use quorum-type fixed and cluster.quorum-count if it's impossible to aquirequorum again.
-  -name: set volume specific client quorum settings
-   command: gluster volume set {{ fs_volume_name }} cluster.quorum-type auto
-   run_once: true
-   tags: gluster_conf
+  # #use cluster.server-quorum-ratio 0 if it's impossible to aquire quorum again.
+  # -name: set global gluster cluster.server-quorum-ratio
+  #  command: gluster volume set all cluster.server-quorum-ratio 51
+  #  run_once: true
+  #  tags: gluster_conf
+  # #use cluster.server-quorum-type none if it's impossible to aquire quorum again.
+  # -name: set volume specific server quorum settings
+  #  command: gluster volume set {{ fs_volume_name }} cluster.server-quorum-typeserver
+  #  run_once: true
+  #  tags: gluster_conf
+  # #use quorum-type fixed and cluster.quorum-count if it's impossible to aquirequorum again.
+  # -name: set volume specific client quorum settings
+  #  command: gluster volume set {{ fs_volume_name }} cluster.quorum-type auto
+  #  run_once: true
+  #  tags: gluster_conf
