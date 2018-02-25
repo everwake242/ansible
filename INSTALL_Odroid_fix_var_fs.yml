@@ -85,10 +85,10 @@
   #     src: /var/log/
   #     dest: /mnt
   #     remote_src: yes
-- synchronize:
-    src: /var/log
-    dest: /mnt
-  delegate_to: {{ inventory_host }}
+  - synchronize:
+      src: /var/log
+      dest: /mnt
+    delegate_to: {{ inventory_host }}
 
   - name: delete everything in /var/log
     file:
