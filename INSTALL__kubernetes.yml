@@ -12,8 +12,15 @@
 
   tasks:
 
- 
-#### Install gluster packages
+  - name: Install prereq packages
+    apt:
+      name: {{ item }}
+      state: latest
+      update_cache: yes
+      with_items:
+        -  apt-transport-https     
+    tags: kubernetes 
+
   - name: add google apt key
     apt_key:
       url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
@@ -26,9 +33,9 @@
       state: present
     tags: kubernetes
 
-  - name: Install kubeadm
+  - name: Install kubeadm and prereq packages
     apt:
-      name: kubeadm
+      name: kudeadm
       state: latest
       update_cache: yes      
     tags: kubernetes
