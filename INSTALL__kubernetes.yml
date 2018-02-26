@@ -10,7 +10,9 @@
       - k8s3
     pod_network_cidr: '10.244.0.0/16'  ## this is coded into the flannel deploy and cannot be changed at will
     k8s_admin_user: 'admjan'
-    KUBECONFIG: '$HOME/admin.conf'
+#    KUBECONFIG: '/home/{{ k8s_admin_user }}/admin.conf'
+    shell_env:
+      KUBECONFIG: /home/{{ k8s_admin_user }}/.kube/admin.conf
 
 
   tasks:
@@ -67,24 +69,25 @@
   - name: copy admin.conf to '{{ k8s_admin_user }}' home folder
     copy:
       src: /etc/kubernetes/admin.conf
-      dest: $HOME/
+      dest: /home/{{ k8s_admin_user }}/.kube/admin.conf  
       remote_src: yes
       owner: '{{ k8s_admin_user }}'
       group: '{{ k8s_admin_user }}'
-            
+    when:  inventory_hostname == k8s_master_node 
 
   
   - name: get cluster token from master node
     shell:  /usr/bin/kubeadm token list |tail -1| awk '{ print $1 }'
-#    when:  inventory_hostname == k8s_master_node 
+    when:  inventory_hostname == k8s_master_node 
     register: k8s_node_token    
     delegate_to: '{{ k8s_master_node }}'
     run_once: true
+    changed_when: false
     tags: kubernetes
 
-  - name: show node token output 
-    debug:
-      var: k8s_node_token
+#  - name: show node token output 
+#    debug:
+#      var: k8s_node_token
 
   - set_fact: 
       k8s_cluster_token: "{{ k8s_node_token.stdout }}"
@@ -96,9 +99,9 @@
 #    debug:
 #     var: '{{ k8s_cluster_token }}'
 
-  - name: show kubeadm output for debug
-    debug:
-      var: k8s_node_token
+#  - name: show kubeadm output for debug
+#    debug:
+#      var: k8s_node_token
 
   - stat:
       path: /etc/kubernetes/kubelet.conf
@@ -112,11 +115,12 @@
   - name: Joining node to Kubernetes cluster
 #    shell: kubeadm join --token {{ k8s_node_token.stdout }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification      
     shell: kubeadm join --token {{ k8s_cluster_token }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification      
-    when:  inventory_hostname != k8s_master_node 
+    when:  inventory_hostname != k8s_master_node and kubeletconf_file.stat.exists != true 
 
   - name: install flannel 
     shell: '/usr/bin/kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml'      
     when:  inventory_hostname == k8s_master_node and kubeletconf_file.stat.exists == true 
-    environment: '{{ KUBECONFIG }}'
+#     environment: '/home/admjan/admin.conf'
+    environment: '{{ shell_env }}'
     become_user: ' {{ k8s_admin_user }}'
 
