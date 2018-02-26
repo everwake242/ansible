@@ -1,0 +1,35 @@
+# vim: ts=2 sw=2 ai paste
+
+---
+- hosts: all
+  become: true
+  vars:
+    k8s_master_node: 'k8s1'
+    k8s_slaves:
+      - k8s2
+      - k8s3
+    pod_network_cidr: '10.244.0.0/16'
+
+  tasks:
+
+  - name: reset kubernetes
+    shell: /usr/bin/kubeadm reset
+    register: kubeadm_output   
+    tags: kubernetes
+
+  - name: delete everything in /var/log
+    file:
+      path: {{ item }}
+      state: absent
+    with_items:
+      - /var/lib/cni
+      - /run/flannel
+      - /etc/cni 
+      - /var/lib/etcd
+
+  - name: remove network interfaces
+    shell: '{{ item }}'
+    with_items:
+      - '/sbin/ifconfig cni0 down'
+      - '/sbin/brctl delbr cni0'
+    tags: kubernetes    
