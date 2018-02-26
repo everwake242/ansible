@@ -67,31 +67,55 @@
   #   debug:
   #     var: kubeadm_output.stdout
   
-  - name: get cluster token
+  - name: get cluster token from master node
     shell:  /usr/bin/kubeadm token list |tail -1| awk '{ print $1 }'
-    when:  inventory_hostname == k8s_master_node 
-    register: k8s_cluster_token    
+#    when:  inventory_hostname == k8s_master_node 
+    register: k8s_node_token    
     delegate_to: '{{ k8s_master_node }}'
+    run_once: true
     tags: kubernetes
-  
-#  - set_fact:
-#      k8s_cluster_token: '{{ k8s_cluster_token.stdout }}'
+
+
+  - set_fact: 
+      k8s_cluster_token: "{{ k8s_node_token }}"
+    delegate_to: "{{ k8s_slaves }}"
+    delegate_facts: True
+
+  - name: show cluster token fact 
+    debug:
+      var: '{{ k8s_cluster_token }}'
 
   - name: show kubeadm output for debug
     debug:
-      var: k8s_cluster_token.stdout
+      var: k8s_node_token
 
   - stat:
       path: /etc/kubernetes/kubelet.conf
     register: kubeletconf_file
 
+#  - name: show token output as hostvar with variable
+#    debug:
+#      var: hostvars['k8s1']['k8s_node_token']['stdout']
+#      var: hostvars['{{ k8s_master_node }}']['k8s_node_token']['stdout']
 
-  - name: ':: cluster :: Joining node to Kubernetes cluster'
-#    shell: 'kubeadm join --token {{ hostvars.k8s1.k8s_cluster_token.stdout }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification'      
-#    shell: 'kubeadm join --token {{ ['hostvars ']['k8s_master_node']['k8s_cluster_token']['stdout'] }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification'      
-    shell: 'kubeadm join --token {{ hostvars[k8s_master_node][k8s_cluster_token][stdout] }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification'      
-    when:  inventory_hostname != k8s_master_node and kubeletconf_file.stat.exists != true 
+#### rewrite token to usable form
+#  - set_fact:
+#      k8s_cluster_token: "{{ hostvars['{{ 'k8s_master_node' }}']['k8s_node_token']['stdout'] }}"
+#      k8s_cluster_token: '{{ hostvars['{{ k8s_master_node }}']['{{ k8s_node_token }}']['stdout'] }}'
+#      k8s_cluster_token: '{{ hostvars['k8s_master_node']['k8s_node_token']['stdout'] }}'
+#      k8s_cluster_token: '{{ hostvars["k8s_master_node"]["k8s_node_token"]["stdout"] }}'
+#      k8s_cluster_token: "hostvars['k8s_master_node']['k8s_node_token']['stdout']" 
+#      delegate_facts: True
 
-- name: ':: cluster :: install flannel' 
-  shell: '/usr/bin/kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml'      
-  when:  inventory_hostname == k8s_master_node and kubeletconf_file.stat.exists == true 
+#  - name: show cluster token fact 
+#    debug:
+#      var: '{{ k8s_cluster_token }}'
+
+  - name: Joining node to Kubernetes cluster
+#    shell: kubeadm join --token {{ k8s_node_token.stdout }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification      
+    shell: kubeadm join --token {{ k8s_cluster_token.stdout }} {{ k8s_master_node }}:6443 --discovery-token-unsafe-skip-ca-verification      
+    when:  inventory_hostname != k8s_master_node 
+
+  - name: install flannel 
+    shell: '/usr/bin/kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml'      
+    when:  inventory_hostname == k8s_master_node and kubeletconf_file.stat.exists == true 

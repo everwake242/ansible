@@ -19,7 +19,7 @@
 
   - name: delete everything in /var/log
     file:
-      path: {{ item }}
+      path: '{{ item }}'
       state: absent
     with_items:
       - /var/lib/cni
@@ -32,4 +32,6 @@
     with_items:
       - '/sbin/ifconfig cni0 down'
       - '/sbin/brctl delbr cni0'
+    failed_when: false
+    changed_when: false
     tags: kubernetes    
