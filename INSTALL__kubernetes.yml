@@ -25,6 +25,7 @@
     with_items:
       - apt-transport-https     
       - docker.io
+      - curl
     tags: kubernetes 
 
   - name: ensure docker engine is started
@@ -118,9 +119,23 @@
     when:  inventory_hostname != k8s_master_node and kubeletconf_file.stat.exists != true 
 
   - name: install flannel 
-    shell: '/usr/bin/kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml'      
+#    shell: '/usr/bin/kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml' 
+    shell: 'curl -sSL https://rawgit.com/coreos/flannel/v0.9.1/Documentation/kube-flannel.yml | sed "s/amd64/arm/g" | kubectl create -f -'     
     when:  inventory_hostname == k8s_master_node and kubeletconf_file.stat.exists == true 
 #     environment: '/home/admjan/admin.conf'
     environment: '{{ shell_env }}'
     become_user: ' {{ k8s_admin_user }}'
+
+    ## this result in the master never becoming ready due to problems with cni in kubelet.
+
+    ## comment the line  Removing the $KUBELET_NETWORK_ARGS in /etc/systemd/system/kubelet.service.d/10-kubeadm.conf  works
+    ##then run:
+    ## systemctl daemon-reload
+    ## systemctl restart kubelet.serviec
+    ## systemctl restart docker
+
+    ### then kubectl get nodes resturn "ready"
+
+
+    ### for every node you want to joing you have to do the same before joining them
 

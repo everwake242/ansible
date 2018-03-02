@@ -35,3 +35,7 @@
     failed_when: false
     changed_when: false
     tags: kubernetes    
+
+
+### to totally remove kubernetes some packages will need to be removed too:
+## ansible -K -a "sudo apt remove kubeadm kubectl kubelet kubernetes-cni -y" -i ./k8s_hosts.txt all
