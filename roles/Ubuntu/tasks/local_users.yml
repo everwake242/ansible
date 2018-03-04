@@ -8,7 +8,7 @@
   
   - name: add admjan account locally
     user: 
-      name:
+      name: admjan 
       uid: 10242
       group: admjan
       groups: adm,sudo
