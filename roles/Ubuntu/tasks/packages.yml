@@ -10,3 +10,4 @@
       - lvm2
       - xfsprogs
       - whois 
+      - libuser
