@@ -12,6 +12,6 @@
       uid: 10242
       group: admjan
       groups: adm,sudo
-      local: yes
+      # local: yes
       password: '{{ ADMJAN_PASSWD }}'
       state: present
