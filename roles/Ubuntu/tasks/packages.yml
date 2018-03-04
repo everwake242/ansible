@@ -1,0 +1,12 @@
+---
+
+  - name: install extra packages
+    apt:
+      name: '{{ item }}'
+      state: latest 
+      update_cache: yes 
+    with_items:
+      - vlan 
+      - lvm2
+      - xfsprogs
+      - whois 
