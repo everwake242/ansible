@@ -10,4 +10,5 @@
       - lvm2
       - xfsprogs
       - whois 
+      - vim
       - libuser

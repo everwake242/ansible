@@ -15,12 +15,3 @@
       group: root
       mode: 0644
     tags: bash
-
-  - name: update bash prompt default
-    template:
-      src: templates/etc/sysconfig/bash-prompt-default
-      dest: /etc/sysconfig/bash-prompt-default
-      owner: root
-      group: root
-      mode: 0755
-    tags: bash        
