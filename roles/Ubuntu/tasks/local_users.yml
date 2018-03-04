@@ -13,5 +13,5 @@
       group: admjan
       groups: adm,sudo
       local: yes
-      password: ${{ ADMJAN_PASSWD }}
+      password: {{ ADMJAN_PASSWD }}
       state: present
