@@ -1,0 +1,17 @@
+---
+
+  - name: add admjan group locally
+    group:
+      name: admjan
+      state: present
+
+  
+  - name: add admjan account locally
+    user: 
+      name:
+      uid: 10242
+      group: admjan
+      groups: adm,sudo
+      local: yes
+      password: ${{ ADMJAN_PASSWD }}
+      state: present

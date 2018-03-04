@@ -1,0 +1,9 @@
+---
+
+  # - include_vars: main.yml
+  # - name: Run the OS specific pre install tasks
+  #   include_tasks: "{{ ansible_distribution }}_pre_tasks.yml"
+
+  - include_tasks: local_users.yml
+  - include_tasks: configure_settings.yml
+  - include_tasks: sudoers.yml

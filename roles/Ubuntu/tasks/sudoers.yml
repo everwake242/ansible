@@ -1,0 +1,18 @@
+---
+
+  - name: copy sudoers.d local exeptions
+    template:
+      src: "{{ item }}"
+      dest: "/etc/sudoers.d/{{ item | basename }}"
+      owner: root
+      mode: 0644
+    with_fileglob:
+      - "templates/etc/sudoers.d/*"
+    tags: sudoers
+
+  # - name: update sudoers with template and verify with visudo
+  #   template:
+  #     src: templates/etc/sudoers
+  #     dest: /etc/sudoers
+  #     validate: "/usr/sbin/visudo -cf %s"
+  #   tags: sudoers
