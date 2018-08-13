@@ -1,35 +1,43 @@
----
+# vim: ts=2 sw=2 ai paste
 
-  - name: "Install packages"
-    apt:
+---
+- hosts: all
+  become: true
+  vars:
+    nordvpn_server: "us1908" ### 1908 is in Los Angeles
+  
+  tasks:
+
+    - name: "Install packages"
+      apt:
         update_cache: no 
         name: "{{ item }}"
         state: present
-    with_items:
-      - ca-certificates
-      - openvpn
-      - unzip 
-  - name: fetch NordVPN config
-    get_url:
+      with_items:
+        - ca-certificates
+        - openvpn
+        - unzip 
+    - name: fetch NordVPN config
+      get_url:
         dest: /var/tmp
         url: https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip
   
-  - name: unarchive config files
-    unarchive:
+    - name: unarchive config files
+      unarchive:
         src: /var/tmp/ovpn.zip
         dest: /var/tmp/NordVPN/
         remote_src: yes
         
-  - name: "Copy ovpn config file"
-    copy:
+    - name: "Copy ovpn config file"
+      copy:
         dest: /etc/openvpn/openvpn.conf
-        src: /var/tmp/NordVPN/ovpn_udp/us1908.nordvpn.com.udp.ovpn  ## 1908 is in Los Angeles
+        src: /var/tmp/NordVPN/ovpn_udp/"{{ nordvpn_server }}".nordvpn.com.udp.ovpn  ## 1908 is in Los Angeles
         remote_src: yes   
         group: root
         mode: 0644
         owner: root
-  - name: "start OpenVPN service"
-    systemd:
+    - name: "start OpenVPN service"
+      systemd:
         no_block: no # not required. Do not synchronously wait for the requested operation to finish. Enqueued job will continue without Ansible blocking on its completion.
         force: undefined # not required. Whether to override existing symlinks.
         name: openvpn.service
