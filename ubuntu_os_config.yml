@@ -3,4 +3,4 @@
   become: true
 
   roles:
-    - role: Ubuntu
+    - role: Ubuntu_OSconfig
