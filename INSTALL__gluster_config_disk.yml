@@ -69,13 +69,14 @@
     apt_repository:
       repo: ppa:gluster/glusterfs-4.0
       state: present
+    tags: gluster_install      
 
   - name: Install gluster packages
     apt:
       name: glusterfs-server
       state: latest
       update_cache: yes      
-
+    tags: gluster_install
 
   - name: enable glusterd service
     systemd:
@@ -83,14 +84,14 @@
       enabled: yes
       daemon_reload: yes
       state: started
-    tags: glusterd
+    tags: gluster_install
 
   - name: ensure {{ fs_volume_name }} directory exists within brick
     file:
       path: '{{ mount_point }}/{{ fs_volume_name }}'
       state: directory
       mode: 0755
-    tags: glusterd
+    tags: gluster_install
 
   - name: create gluster volume
     gluster_volume:
@@ -106,12 +107,13 @@
         - k8s3
     run_once: true
     register: glusterfs_setup
-    tags: glusterd
+    tags: gluster_install
 
   - name: create clientmountpoint for Gluster volume
     file:
       path: '{{ client_mount_point}}/{{ fs_volume_name }}'
       state: present
+    tags: gluster_install
 
   - name: tune gluster volume
     gluster_volume:
@@ -123,4 +125,4 @@
       }
     run_once: true 
     tags: gluster_conf    
-
+    tags: gluster_install
