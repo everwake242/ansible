@@ -67,7 +67,7 @@
 #### Install gluster packages
   - name: add apt repo for gluster
     apt_repository:
-      repo: ppa:gluster/glusterfs-3.13
+      repo: ppa:gluster/glusterfs-4.0
       state: present
 
   - name: Install gluster packages
@@ -96,7 +96,7 @@
     gluster_volume:
       name: '{{ fs_volume_name }}'
       bricks: '{{ mount_point }}{{ fs_volume_name }}'
-      arbiters: 1
+      arbiters: 0
       replicas: 3
       state: present
       rebalance: yes
@@ -113,24 +113,14 @@
       path: '{{ client_mount_point}}/{{ fs_volume_name }}'
       state: present
 
+  - name: tune gluster volume
+    gluster_volume:
+    state: present
+    name: '{{ fs_volume_name }}'
+    options:
+      { network.ping-timeout 20,
+        performance.cache-size 32MB
+      }
+    run_once: true 
+    tags: gluster_conf    
 
-  # -name: tune gluster volume
-  #  command: gluster volume set {{ fs_volume_name }} network.ping-timeout 20performance.cache-size 256MB auth.allowglusterfs1.mydomain.local,glusterfs2.mydomain.local
-  #  run_once: true
-  #  tags: gluster_conf
-   
-  # #use cluster.server-quorum-ratio 0 if it's impossible to aquire quorum again.
-  # -name: set global gluster cluster.server-quorum-ratio
-  #  command: gluster volume set all cluster.server-quorum-ratio 51
-  #  run_once: true
-  #  tags: gluster_conf
-  # #use cluster.server-quorum-type none if it's impossible to aquire quorum again.
-  # -name: set volume specific server quorum settings
-  #  command: gluster volume set {{ fs_volume_name }} cluster.server-quorum-typeserver
-  #  run_once: true
-  #  tags: gluster_conf
-  # #use quorum-type fixed and cluster.quorum-count if it's impossible to aquirequorum again.
-  # -name: set volume specific client quorum settings
-  #  command: gluster volume set {{ fs_volume_name }} cluster.quorum-type auto
-  #  run_once: true
-  #  tags: gluster_conf
